@@ -1,0 +1,174 @@
+CREATE TABLE employee(
+ID_employee NUMBER (8)CONSTRAINT  PK_employee PRIMARY KEY ,
+nom_employee VARCHAR2(50)CONSTRAINT NN_nom_employee NOT NULL,
+prenom_employee VARCHAR2 (50),
+passworrd VARCHAR2(50)CONSTRAINT NN_PASS NOT NULL,
+specialite VARCHAR2(50),
+mail VARCHAR2(50)CONSTRAINT UN_mail UNIQUE ,
+adresse VARCHAR2 (50),
+diplome VARCHAR2(50),
+date_naiss DATE DEFAULT SYSDATE,
+date_recurutement  DATE DEFAULT SYSDATE ,
+salaire NUMBER ,
+telephone NUMBER(9));
+
+CREATE TABLE STAFF (
+ID_staff NUMBER(8) CONSTRAINT  PK_staff PRIMARY KEY , 
+nom_staff VARCHAR2(10),
+ID_employee NUMBER (8),
+CONSTRAINT FK_staff_employee FOREIGN KEY (ID_employee)REFERENCES employee (ID_employee),
+CONSTRAINT CHK_staff CHECK ((nom_staff) IN ('chef','serveurs','securite'))
+);
+
+CREATE TABLE plat (
+ID_plat NUMBER(8)CONSTRAINT PK_plat PRIMARY KEY ,
+nom_plat VARCHAR(50)  CONSTRAINT NN_nom_plat NOT NULL,
+nb_personne NUMBER(2),
+prix NUMBER  CONSTRAINT NN_prix NOT NULL,
+descriptions VARCHAR2(50)
+);
+
+CREATE TABLE ingredient (
+ID_ing NUMBER(8) CONSTRAINT PK_ingredient PRIMARY KEY,
+nom_ing VARCHAR2 (50) CONSTRAINT NN_nom_ing NOT NULL,
+typee VARCHAR2(80),
+quantite NUMBER(8)
+);
+
+CREATE TABLE recette (
+ID_recette NUMBER(8)CONSTRAINT  PK_recette  PRIMARY KEY ,
+nom_recette VARCHAR2(50)CONSTRAINT NN_nom_recette NOT NULL,
+origine  VARCHAR2(50),
+calorie VARCHAR2(50),
+ID_ing NUMBER(8),
+niveau_difficulte VARCHAR2(50),
+temps_de_prep VARCHAR2(2),
+
+CONSTRAINT FK_recette_ingredient FOREIGN KEY (ID_ing)REFERENCES ingredient (ID_ing),
+CONSTRAINT CHK_ing CHECK ((niveau_difficulte) IN ('super_easy','easy','medium','Hard','super hard')));
+
+CREATE TABLE est_prepare(
+ID_recette NUMBER(8),
+ID_plat NUMBER(8),
+ID_employee NUMBER (8),
+astuce VARCHAR2(50),
+instruction VARCHAR2(200),
+CONSTRAINT PK_est_prepare PRIMARY KEY (ID_recette ,ID_plat,ID_employee),
+CONSTRAINT FK_est_prep_recette FOREIGN KEY (ID_recette ) REFERENCES recette (ID_recette ),
+CONSTRAINT FK_est_prep_plat FOREIGN KEY (ID_plat) REFERENCES plat (ID_plat),
+CONSTRAINT FK_est_prep_employee FOREIGN KEY (ID_employee) REFERENCES employee (ID_employee));
+
+CREATE TABLE client (
+ID_client NUMBER (8)CONSTRAINT  PK_client PRIMARY KEY ,
+nom_client VARCHAR2(50)CONSTRAINT NN_nom_client NOT NULL,
+prenom_client VARCHAR2 (50),
+passwordd VARCHAR2(50)CONSTRAINT NN_mot_de_passe NOT NULL,
+mail VARCHAR2(50)CONSTRAINT UN_e_mail UNIQUE ,
+maladie_allergie VARCHAR2(50),
+tel NUMBER (8),
+date_naiss DATE DEFAULT SYSDATE );
+
+CREATE TABLE favoris (
+ID_client NUMBER (8),
+ID_plat NUMBER(8),
+CONSTRAINT PK_favoris PRIMARY KEY (ID_client,ID_plat),
+CONSTRAINT FK_favoris_client FOREIGN KEY (ID_client) REFERENCES client (ID_client),
+CONSTRAINT FK_favoris_plat FOREIGN KEY (ID_plat) REFERENCES plat (ID_plat));
+
+CREATE TABLE feed_back (
+ID_feedback  NUMBER (8)CONSTRAINT PK_feed_back PRIMARY KEY,
+le_feedback VARCHAR(100));
+CREATE TABLE avis_client (
+ID_client NUMBER (8)  ,
+ID_feedback NUMBER (8),
+CONSTRAINT PK_avis PRIMARY KEY(ID_client,ID_feedback),
+CONSTRAINT FK_avis_client FOREIGN KEY (ID_client) REFERENCES client (ID_client),
+CONSTRAINT FK_avis_feedback FOREIGN KEY (ID_feedback) REFERENCES feed_back (ID_feedback));
+
+CREATE TABLE ma_table (
+ID_table NUMBER (8) CONSTRAINT PK_ma_table PRIMARY KEY ,
+emplacement VARCHAR2(50),
+capacite NUMBER(2),
+CONSTRAINT CHK_capacite CHECK (capacite<20 AND capacite >0));
+CREATE TABLE reservation (
+ID_client NUMBER (8),
+ID_table NUMBER(8),
+dat_res DATE DEFAULT SYSDATE,
+CONSTRAINT PK_reservation PRIMARY KEY (ID_client ,ID_table),
+CONSTRAINT FK_reservation_client FOREIGN KEY (ID_client) REFERENCES client (ID_client),
+CONSTRAINT FK_reservation_table FOREIGN KEY (ID_table) REFERENCES ma_table (ID_table)
+);
+CREATE TABLE stock (
+ID_stock NUMBER(8) CONSTRAINT PK_stock PRIMARY KEY ,
+ID_ing NUMBER (8),
+quantite_dispo NUMBER(5),
+CONSTRAINT FK_stock_ingredient FOREIGN KEY (ID_ing)REFERENCES ingredient (ID_ing));
+CREATE TABLE suggere_client (
+ID_client NUMBER (8),
+ID_recette NUMBER(8),
+CONSTRAINT PK_sugg PRIMARY KEY (ID_client,ID_recette),
+CONSTRAINT FK_sugg_client FOREIGN KEY (ID_client) REFERENCES client (ID_client),
+CONSTRAINT FK_sugg_recette FOREIGN KEY (ID_recette) REFERENCES recette (ID_recette));
+
+CREATE TABLE boisson (
+ID_boisson NUMBER(8)CONSTRAINT PK_boisson PRIMARY KEY ,
+nom_boisson VARCHAR2(50),
+contenace_mL NUMBER (3),
+prix_unitaire NUMBER 
+);
+
+CREATE TABLE supplementaire (
+ID_supp NUMBER(8)CONSTRAINT PK_supp PRIMARY KEY ,
+nom_supp VARCHAR2(50),
+price NUMBER 
+);
+CREATE TABLE commande (
+ID_commande NUMBER(8) CONSTRAINT PK_commande PRIMARY KEY ,
+ID_client NUMBER (8),
+date_commande DATE DEFAULT SYSDATE ,
+CONSTRAINT FK_commmande_client FOREIGN KEY (ID_client) REFERENCES client (ID_client)
+);
+CREATE TABLE ligne_commande (
+ID_commande NUMBER(8),
+ID_supp NUMBER(8),
+ID_boisson NUMBER(8),
+ID_plat NUMBER (8),
+CONSTRAINT PK_ligne_commande PRIMARY KEY (ID_commande),
+CONSTRAINT FK_ligne_commande_commande FOREIGN KEY (ID_commande) REFERENCES commande (ID_commande),
+CONSTRAINT FK_ligne_commande_plat FOREIGN KEY (ID_plat) REFERENCES plat (ID_plat),
+CONSTRAINT FK_ligne_commande_boisson FOREIGN KEY (ID_boisson) REFERENCES boisson (ID_boisson),
+CONSTRAINT FK_ligne_commmande_supp FOREIGN KEY (ID_supp) REFERENCES supplementaire (ID_supp));
+
+CREATE TABLE refuser (
+ID_client NUMBER (8),
+ID_commande NUMBER(8),
+motif VARCHAR2(100),
+CONSTRAINT PK_refuser PRIMARY KEY (ID_commande,ID_client),
+CONSTRAINT FK_refus_commande FOREIGN KEY (ID_commande) REFERENCES commande (ID_commande),
+CONSTRAINT FK_refus_client FOREIGN KEY (ID_client) REFERENCES client (ID_client));
+
+
+CREATE TABLE fournisseur (
+ID_fournisseur NUMBER (8)CONSTRAINT  PK_fournisseur PRIMARY KEY ,
+nom_fournisseur VARCHAR2(50)CONSTRAINT NN_nom_fournisseur NOT NULL,
+prenom_fournisseur VARCHAR2 (50),
+mail VARCHAR2(50)CONSTRAINT UN_add_mail UNIQUE ,
+num_tel NUMBER (8),
+adresse VARCHAR2(100)
+);
+
+CREATE TABLE facture (
+ID_facture  NUMBER (8) CONSTRAINT PK_facture PRIMARY KEY,
+montant  NUMBER (8),
+dat_fact DATE DEFAULT SYSDATE
+);
+CREATE TABLE operation_achat(
+ ID_fournisseur  NUMBER (8),
+ ID_facture  NUMBER (8),
+ ID_ing NUMBER (8),
+ dat_op DATE DEFAULT SYSDATE,
+ CONSTRAINT PK_operation_achat PRIMARY KEY (ID_fournisseur, ID_facture, ID_ing),
+ CONSTRAINT FK_op_fournisseur FOREIGN KEY (ID_fournisseur) REFERENCES fournisseur (ID_fournisseur) ,
+ CONSTRAINT FK_op_facture FOREIGN KEY (ID_facture) REFERENCES facture (ID_facture) ,
+ CONSTRAINT FK_op_ingredient FOREIGN KEY (ID_ing) REFERENCES ingredient  (ID_ing) 
+ );
